@@ -5,11 +5,37 @@ const formatNumber = (num: number) => {
   return new Intl.NumberFormat('es-ES').format(num);
 };
 
+const parseBirthDate = (dateStr: string | null): Date => {
+  if (!dateStr) return new Date('2000-02-02'); // fecha por defecto
+
+  // Soporta formatos: DD/MM/YYYY o DD-MM-YYYY
+  const parts = dateStr.split(/[/-]/);
+  if (parts.length === 3) {
+    const [day, month, year] = parts;
+    // Mes - 1 porque en JavaScript los meses van de 0-11
+    return new Date(Number(year), Number(month) - 1, Number(day));
+  }
+  
+  return new Date('2000-02-02'); // fecha por defecto si el formato no es válido
+};
+
+const formatDisplayDate = (date: Date): string => {
+  return date.toLocaleDateString('es-ES', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  });
+};
+
 export default function HomePage() {
   const urlParams = new URLSearchParams(window.location.search);
   const name = urlParams.get('name');
+  const birthDateParam = urlParams.get('birthdate');
+  const birthDate = parseBirthDate(birthDateParam);
   
-  const birthDate = new Date('2000-02-02');
+  console.log('Birth date param:', birthDateParam);
+  console.log('Parsed birth date:', birthDate);
+
   const [timeElapsed, setTimeElapsed] = useState({
     years: 0,
     months: 0,
@@ -49,7 +75,7 @@ export default function HomePage() {
 
     const interval = setInterval(calculateTime, 10);
     return () => clearInterval(interval);
-  }, []);
+  }, [birthDate]);
 
   return (
     <div className="min-h-screen bg-gray-950 text-white px-4 py-6">
@@ -66,7 +92,7 @@ export default function HomePage() {
         </div>
         
         <p className="text-center mb-6 text-base sm:text-lg text-gray-300">
-          Naciste el 2 de Febrero del 2000
+          Naciste el {formatDisplayDate(birthDate)}
         </p>
 
         <Card className="p-4 sm:p-6 text-center mb-6 bg-gradient-to-r from-purple-900/50 to-pink-900/50 border-purple-700/50">

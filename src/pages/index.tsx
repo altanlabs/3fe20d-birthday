@@ -8,12 +8,17 @@ const formatNumber = (num: number) => {
 const parseBirthDate = (dateStr: string | null): Date => {
   if (!dateStr) return new Date('2000-02-02'); // fecha por defecto
 
-  // Soporta formatos: DD/MM/YYYY o DD-MM-YYYY
+  // Soporta formatos: MM/DD/YYYY o MM-DD-YYYY (formato americano)
   const parts = dateStr.split(/[/-]/);
   if (parts.length === 3) {
-    const [day, month, year] = parts;
+    const [month, day, year] = parts;
     // Mes - 1 porque en JavaScript los meses van de 0-11
-    return new Date(Number(year), Number(month) - 1, Number(day));
+    const date = new Date(Number(year), Number(month) - 1, Number(day));
+    
+    // Verificar si la fecha es válida
+    if (!isNaN(date.getTime())) {
+      return date;
+    }
   }
   
   return new Date('2000-02-02'); // fecha por defecto si el formato no es válido

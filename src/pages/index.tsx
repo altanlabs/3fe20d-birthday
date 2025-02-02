@@ -8,19 +8,38 @@ const formatNumber = (num: number) => {
 const parseBirthDate = (dateStr: string | null): Date => {
   if (!dateStr) return new Date('2000-02-02'); // fecha por defecto
 
-  // Soporta formatos: MM/DD/YYYY o MM-DD-YYYY (formato americano)
+  // Soporta formatos: DD/MM/YYYY, MM/DD/YYYY y sus variantes con -
   const parts = dateStr.split(/[/-]/);
   if (parts.length === 3) {
-    const [month, day, year] = parts;
-    // Mes - 1 porque en JavaScript los meses van de 0-11
-    const date = new Date(Number(year), Number(month) - 1, Number(day));
+    const [first, second, year] = parts;
     
-    // Verificar si la fecha es válida
-    if (!isNaN(date.getTime())) {
+    // Intentar primero como DD/MM/YYYY
+    let date = new Date(Number(year), Number(second) - 1, Number(first));
+    if (!isNaN(date.getTime()) && date.getDate() === Number(first)) {
+      console.log('Parsed as DD/MM/YYYY');
       return date;
+    }
+
+    // Si falla, intentar como MM/DD/YYYY
+    date = new Date(Number(year), Number(first) - 1, Number(second));
+    if (!isNaN(date.getTime()) && date.getDate() === Number(second)) {
+      console.log('Parsed as MM/DD/YYYY');
+      return date;
+    }
+
+    // Si ambos fallan, intentar una última vez asumiendo que los números son válidos
+    try {
+      const possibleDate = new Date(Number(year), Number(first) - 1, Number(second));
+      if (!isNaN(possibleDate.getTime())) {
+        console.log('Parsed with flexible format');
+        return possibleDate;
+      }
+    } catch (e) {
+      console.log('Error parsing date:', e);
     }
   }
   
+  console.log('Using default date');
   return new Date('2000-02-02'); // fecha por defecto si el formato no es válido
 };
 
@@ -36,10 +55,10 @@ export default function HomePage() {
   const urlParams = new URLSearchParams(window.location.search);
   const name = urlParams.get('name');
   const birthDateParam = urlParams.get('birthdate');
-  const birthDate = parseBirthDate(birthDateParam);
   
-  console.log('Birth date param:', birthDateParam);
-  console.log('Parsed birth date:', birthDate);
+  console.log('Birth date param received:', birthDateParam);
+  const birthDate = parseBirthDate(birthDateParam);
+  console.log('Parsed birth date:', birthDate.toISOString());
 
   const [timeElapsed, setTimeElapsed] = useState({
     years: 0,

@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Card } from '@/components/ui/card';
+import { useSearchParams } from 'react-router-dom';
 
 const formatNumber = (num: number) => {
   return new Intl.NumberFormat('es-ES').format(num);
 };
 
 export default function HomePage() {
+  const [searchParams] = useSearchParams();
+  const name = searchParams.get('name');
   const birthDate = new Date('2000-02-02');
   const [timeElapsed, setTimeElapsed] = useState({
     years: 0,
@@ -52,9 +55,16 @@ export default function HomePage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl font-bold text-center mb-8 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-          ¡Muchas Felicidades!
-        </h1>
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            ¡Muchas Felicidades!
+          </h1>
+          {name && (
+            <h2 className="text-2xl font-semibold text-purple-500 dark:text-purple-400">
+              {name}
+            </h2>
+          )}
+        </div>
         
         <p className="text-center mb-8 text-lg">
           Naciste el 2 de Febrero del 2000

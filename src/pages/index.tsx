@@ -6,13 +6,9 @@ const formatNumber = (num: number) => {
 };
 
 export default function HomePage() {
-  // Obtener el parámetro name de la URL
   const urlParams = new URLSearchParams(window.location.search);
   const name = urlParams.get('name');
   
-  console.log('URL Params:', window.location.search); // Debug log
-  console.log('Name param:', name); // Debug log
-
   const birthDate = new Date('2000-02-02');
   const [timeElapsed, setTimeElapsed] = useState({
     years: 0,
@@ -56,65 +52,51 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="text-center space-y-2 mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+    <div className="min-h-screen bg-gray-950 text-white px-4 py-6">
+      <div className="max-w-lg mx-auto">
+        <div className="text-center space-y-2 mb-6">
+          <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
             ¡Muchas Felicidades!
           </h1>
           {name && (
-            <h2 className="text-3xl font-bold text-purple-500 animate-fade-in">
+            <h2 className="text-2xl sm:text-3xl font-bold text-purple-400 animate-fade-in">
               {name}
             </h2>
           )}
         </div>
         
-        <p className="text-center mb-8 text-lg">
+        <p className="text-center mb-6 text-base sm:text-lg text-gray-300">
           Naciste el 2 de Febrero del 2000
         </p>
 
-        <Card className="p-8 text-center mb-8 bg-gradient-to-r from-purple-900/50 to-pink-900/50">
+        <Card className="p-4 sm:p-6 text-center mb-6 bg-gradient-to-r from-purple-900/50 to-pink-900/50 border-purple-700/50">
           <div className="flex flex-col items-center justify-center">
-            <h3 className="text-6xl md:text-7xl lg:text-8xl font-bold text-purple-400 font-mono tracking-tight">
+            <h3 className="text-4xl sm:text-6xl font-bold text-purple-400 font-mono tracking-tight break-all">
               {formatNumber(timeElapsed.seconds)}
-              <span className="text-3xl md:text-4xl lg:text-5xl text-pink-500">.{String(timeElapsed.milliseconds).padStart(3, '0')}</span>
+              <span className="text-xl sm:text-3xl text-pink-400">.{String(timeElapsed.milliseconds).padStart(3, '0')}</span>
             </h3>
-            <p className="text-xl text-gray-400 mt-2">Segundos</p>
+            <p className="text-base sm:text-lg text-gray-300 mt-2">Segundos</p>
           </div>
         </Card>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          <Card className="p-6 text-center bg-gray-900/50">
-            <h3 className="text-2xl font-bold text-purple-400 font-mono">{formatNumber(timeElapsed.years)}</h3>
-            <p className="text-gray-400">Años</p>
-          </Card>
-
-          <Card className="p-6 text-center bg-gray-900/50">
-            <h3 className="text-2xl font-bold text-purple-400 font-mono">{formatNumber(timeElapsed.months)}</h3>
-            <p className="text-gray-400">Meses</p>
-          </Card>
-
-          <Card className="p-6 text-center bg-gray-900/50">
-            <h3 className="text-2xl font-bold text-purple-400 font-mono">{formatNumber(timeElapsed.weeks)}</h3>
-            <p className="text-gray-400">Semanas</p>
-          </Card>
-
-          <Card className="p-6 text-center bg-gray-900/50">
-            <h3 className="text-2xl font-bold text-purple-400 font-mono">{formatNumber(timeElapsed.days)}</h3>
-            <p className="text-gray-400">Días</p>
-          </Card>
-
-          <Card className="p-6 text-center bg-gray-900/50">
-            <h3 className="text-2xl font-bold text-purple-400 font-mono">{formatNumber(timeElapsed.hours)}</h3>
-            <p className="text-gray-400">Horas</p>
-          </Card>
-
-          <Card className="p-6 text-center bg-gray-900/50">
-            <h3 className="text-2xl font-bold text-purple-400 font-mono">{formatNumber(timeElapsed.minutes)}</h3>
-            <p className="text-gray-400">Minutos</p>
-          </Card>
+        <div className="grid grid-cols-2 gap-3">
+          <TimeCard value={timeElapsed.years} label="Años" />
+          <TimeCard value={timeElapsed.months} label="Meses" />
+          <TimeCard value={timeElapsed.weeks} label="Semanas" />
+          <TimeCard value={timeElapsed.days} label="Días" />
+          <TimeCard value={timeElapsed.hours} label="Horas" />
+          <TimeCard value={timeElapsed.minutes} label="Minutos" />
         </div>
       </div>
     </div>
   );
 }
+
+const TimeCard = ({ value, label }: { value: number; label: string }) => (
+  <Card className="p-3 sm:p-4 text-center bg-gray-900/50 border-purple-700/30">
+    <h3 className="text-lg sm:text-xl font-bold text-purple-400 font-mono">
+      {formatNumber(value)}
+    </h3>
+    <p className="text-sm sm:text-base text-gray-400">{label}</p>
+  </Card>
+);

@@ -1,33 +1,32 @@
 import { useEffect, useState } from 'react';
 import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 const formatNumber = (num: number) => {
   return new Intl.NumberFormat('es-ES').format(num);
 };
 
 const parseBirthDate = (dateStr: string | null): Date => {
-  if (!dateStr) return new Date('2000-02-02'); // fecha por defecto
+  if (!dateStr) return new Date('2000-02-02');
 
-  // Soporta formatos: DD/MM/YYYY, MM/DD/YYYY y sus variantes con -
   const parts = dateStr.split(/[/-]/);
   if (parts.length === 3) {
     const [first, second, year] = parts;
     
-    // Intentar primero como DD/MM/YYYY
     let date = new Date(Number(year), Number(second) - 1, Number(first));
     if (!isNaN(date.getTime()) && date.getDate() === Number(first)) {
       console.log('Parsed as DD/MM/YYYY');
       return date;
     }
 
-    // Si falla, intentar como MM/DD/YYYY
     date = new Date(Number(year), Number(first) - 1, Number(second));
     if (!isNaN(date.getTime()) && date.getDate() === Number(second)) {
       console.log('Parsed as MM/DD/YYYY');
       return date;
     }
 
-    // Si ambos fallan, intentar una última vez asumiendo que los números son válidos
     try {
       const possibleDate = new Date(Number(year), Number(first) - 1, Number(second));
       if (!isNaN(possibleDate.getTime())) {
@@ -39,8 +38,7 @@ const parseBirthDate = (dateStr: string | null): Date => {
     }
   }
   
-  console.log('Using default date');
-  return new Date('2000-02-02'); // fecha por defecto si el formato no es válido
+  return new Date('2000-02-02');
 };
 
 const formatDisplayDate = (date: Date): string => {
@@ -55,10 +53,13 @@ export default function HomePage() {
   const urlParams = new URLSearchParams(window.location.search);
   const name = urlParams.get('name');
   const birthDateParam = urlParams.get('birthdate');
-  
-  console.log('Birth date param received:', birthDateParam);
   const birthDate = parseBirthDate(birthDateParam);
-  console.log('Parsed birth date:', birthDate.toISOString());
+  
+  const [showInviteForm, setShowInviteForm] = useState(false);
+  const [inviteName, setInviteName] = useState('');
+  const [inviteBirthdate, setInviteBirthdate] = useState('');
+  const [generatedUrl, setGeneratedUrl] = useState('');
+  const [copied, setCopied] = useState(false);
 
   const [timeElapsed, setTimeElapsed] = useState({
     years: 0,
@@ -101,6 +102,25 @@ export default function HomePage() {
     return () => clearInterval(interval);
   }, [birthDate]);
 
+  const generateInviteUrl = () => {
+    const baseUrl = window.location.origin + window.location.pathname;
+    const params = new URLSearchParams();
+    if (inviteName) params.set('name', inviteName);
+    if (inviteBirthdate) params.set('birthdate', inviteBirthdate);
+    const url = `${baseUrl}?${params.toString()}`;
+    setGeneratedUrl(url);
+  };
+
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(generatedUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-950 text-white px-4 py-6">
       <div className="max-w-lg mx-auto">
@@ -129,13 +149,71 @@ export default function HomePage() {
           </div>
         </Card>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-3 mb-8">
           <TimeCard value={timeElapsed.years} label="Años" />
           <TimeCard value={timeElapsed.months} label="Meses" />
           <TimeCard value={timeElapsed.weeks} label="Semanas" />
           <TimeCard value={timeElapsed.days} label="Días" />
           <TimeCard value={timeElapsed.hours} label="Horas" />
           <TimeCard value={timeElapsed.minutes} label="Minutos" />
+        </div>
+
+        <div className="text-center">
+          <Button 
+            onClick={() => setShowInviteForm(!showInviteForm)}
+            className="bg-purple-600 hover:bg-purple-700 text-white"
+          >
+            {showInviteForm ? 'Cerrar' : 'Invitar a un amigo'}
+          </Button>
+
+          {showInviteForm && (
+            <Card className="mt-4 p-4 bg-gray-900/50 border-purple-700/30">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="friendName">Nombre</Label>
+                  <Input
+                    id="friendName"
+                    value={inviteName}
+                    onChange={(e) => setInviteName(e.target.value)}
+                    placeholder="Nombre de tu amigo"
+                    className="bg-gray-800 border-purple-700/30 text-white"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="friendBirthdate">Fecha de nacimiento (DD/MM/YYYY)</Label>
+                  <Input
+                    id="friendBirthdate"
+                    value={inviteBirthdate}
+                    onChange={(e) => setInviteBirthdate(e.target.value)}
+                    placeholder="16/01/2000"
+                    className="bg-gray-800 border-purple-700/30 text-white"
+                  />
+                </div>
+                <Button 
+                  onClick={generateInviteUrl}
+                  className="w-full bg-purple-600 hover:bg-purple-700"
+                >
+                  Generar URL
+                </Button>
+
+                {generatedUrl && (
+                  <div className="mt-4 space-y-2">
+                    <Input
+                      value={generatedUrl}
+                      readOnly
+                      className="bg-gray-800 border-purple-700/30 text-white"
+                    />
+                    <Button 
+                      onClick={copyToClipboard}
+                      className="w-full bg-pink-600 hover:bg-pink-700"
+                    >
+                      {copied ? '¡Copiado!' : 'Copiar URL'}
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </Card>
+          )}
         </div>
       </div>
     </div>
